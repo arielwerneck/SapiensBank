@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+﻿﻿using System.Text.Json.Serialization;
 
 public class Conta
 {
@@ -19,5 +19,35 @@ public class Conta
         Cpf = cpf;
         Senha = senha;
         Limite = limite;
+    }
+
+    public bool Sacar(decimal valor)
+    {
+        if (valor <= 0 || valor > SaldoDisponível)
+            return false;
+
+        Saldo -= valor;
+        return true;
+    }
+
+    public void Depositar(decimal valor)
+    {
+        if (valor > 0)
+            Saldo += valor;
+    }
+
+    public void AumentarLimite(decimal valor)
+    {
+        if (valor > 0)
+            Limite += valor;
+    }
+
+    public bool DiminuirLimite(decimal valor)
+    {
+        if (valor <= 0 || valor > Limite)
+            return false;
+
+        Limite -= valor;
+        return true;
     }
 }
