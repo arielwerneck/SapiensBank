@@ -19,27 +19,39 @@ public class Conta
         Cpf = cpf;
         Senha = senha;
         Limite = limite;
+        Saldo = 0; // Garantir que saldo comece em 0
     }
 
     public bool Sacar(decimal valor)
     {
-        if (valor <= 0 || valor > SaldoDisponível)
+        if (valor <= 0) 
             return false;
 
-        Saldo -= valor;
+        // Verificar se tem saldo disponível (saldo + limite)
+        if (valor <= SaldoDisponível)
+        {
+            Saldo -= valor;
+            return true;
+        }
+        return false;
+    }
+
+    public bool Depositar(decimal valor)
+    {
+        if (valor <= 0)
+            return false;
+
+        Saldo += valor;
         return true;
     }
 
-    public void Depositar(decimal valor)
+    public bool AumentarLimite(decimal valor)
     {
-        if (valor > 0)
-            Saldo += valor;
-    }
+        if (valor <= 0)
+            return false;
 
-    public void AumentarLimite(decimal valor)
-    {
-        if (valor > 0)
-            Limite += valor;
+        Limite += valor;
+        return true;
     }
 
     public bool DiminuirLimite(decimal valor)

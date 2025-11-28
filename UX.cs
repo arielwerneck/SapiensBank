@@ -1,5 +1,4 @@
 ﻿﻿using static System.Console;
-using System.Linq;
 
 public class UX
 {
@@ -81,131 +80,134 @@ public class UX
     {
         CriarTitulo(_titulo + " - Efetuar Saque");
         
-        Write(" Número da conta: ");
-        var numero = Convert.ToInt32(ReadLine());
-        
-        Write(" Senha: ");
-        var senha = ReadLine() ?? "";
-        
-        var conta = _banco.Contas.FirstOrDefault(c => c.Numero == numero && c.Senha == senha);
-        
-        if (conta == null)
-        {
-            CriarRodape("Conta não encontrada ou senha inválida!");
-            return;
-        }
-        
+        var conta = BuscarConta();
+        if (conta == null) return;
+
+        WriteLine($" Saldo atual: {conta.Saldo:C}");
+        WriteLine($" Limite: {conta.Limite:C}");
+        WriteLine($" Saldo Disponível: {conta.SaldoDisponível:C}");
         Write(" Valor do saque: ");
-        var valor = Convert.ToDecimal(ReadLine());
         
-        if (valor <= 0)
+        if (!decimal.TryParse(ReadLine(), out decimal valor) || valor <= 0)
         {
-            CriarRodape("Valor deve ser maior que zero!");
+            CriarRodape("Erro: Valor inválido!");
             return;
         }
-        
-        if (!conta.Sacar(valor))
+
+        if (conta.Sacar(valor))
         {
-            CriarRodape("Saldo insuficiente!");
-            return;
+            CriarRodape($"Saque de {valor:C} realizado com sucesso!\nNovo saldo: {conta.Saldo:C}");
         }
-        
-        CriarRodape($"Saque de {valor:C} realizado com sucesso! Novo saldo: {conta.Saldo:C}");
+        else
+        {
+            CriarRodape($"Erro: Saldo insuficiente! Saldo disponível: {conta.SaldoDisponível:C}");
+        }
     }
 
     private void EfetuarDeposito()
     {
         CriarTitulo(_titulo + " - Efetuar Depósito");
         
-        Write(" Número da conta: ");
-        var numero = Convert.ToInt32(ReadLine());
-        
-        var conta = _banco.Contas.FirstOrDefault(c => c.Numero == numero);
-        
-        if (conta == null)
-        {
-            CriarRodape("Conta não encontrada!");
-            return;
-        }
-        
+        var conta = BuscarConta();
+        if (conta == null) return;
+
+        WriteLine($" Saldo atual: {conta.Saldo:C}");
         Write(" Valor do depósito: ");
-        var valor = Convert.ToDecimal(ReadLine());
         
-        if (valor <= 0)
+        if (!decimal.TryParse(ReadLine(), out decimal valor) || valor <= 0)
         {
-            CriarRodape("Valor deve ser maior que zero!");
+            CriarRodape("Erro: Valor inválido!");
             return;
         }
-        
-        conta.Depositar(valor);
-        CriarRodape($"Depósito de {valor:C} realizado com sucesso! Novo saldo: {conta.Saldo:C}");
+
+        if (conta.Depositar(valor))
+        {
+            CriarRodape($"Depósito de {valor:C} realizado com sucesso!\nNovo saldo: {conta.Saldo:C}");
+        }
+        else
+        {
+            CriarRodape("Erro: Valor de depósito inválido!");
+        }
     }
 
     private void AumentarLimite()
     {
         CriarTitulo(_titulo + " - Aumentar Limite");
         
-        Write(" Número da conta: ");
-        var numero = Convert.ToInt32(ReadLine());
+        var conta = BuscarConta();
+        if (conta == null) return;
+
+        WriteLine($" Limite atual: {conta.Limite:C}");
+        Write(" Valor para aumentar: ");
         
-        Write(" Senha: ");
-        var senha = ReadLine() ?? "";
-        
-        var conta = _banco.Contas.FirstOrDefault(c => c.Numero == numero && c.Senha == senha);
-        
-        if (conta == null)
+        if (!decimal.TryParse(ReadLine(), out decimal valor) || valor <= 0)
         {
-            CriarRodape("Conta não encontrada ou senha inválida!");
+            CriarRodape("Erro: Valor inválido!");
             return;
         }
-        
-        Write(" Valor do aumento do limite: ");
-        var valor = Convert.ToDecimal(ReadLine());
-        
-        if (valor <= 0)
+
+        if (conta.AumentarLimite(valor))
         {
-            CriarRodape("Valor deve ser maior que zero!");
-            return;
+            CriarRodape($"Limite aumentado para {conta.Limite:C}!");
         }
-        
-        conta.AumentarLimite(valor);
-        CriarRodape($"Limite aumentado em {valor:C}! Novo limite: {conta.Limite:C}");
+        else
+        {
+            CriarRodape("Erro: Valor inválido para aumento de limite!");
+        }
     }
 
     private void DiminuirLimite()
     {
         CriarTitulo(_titulo + " - Diminuir Limite");
         
+        var conta = BuscarConta();
+        if (conta == null) return;
+
+        WriteLine($" Limite atual: {conta.Limite:C}");
+        Write(" Valor para diminuir: ");
+        
+        if (!decimal.TryParse(ReadLine(), out decimal valor) || valor <= 0)
+        {
+            CriarRodape("Erro: Valor inválido!");
+            return;
+        }
+
+        if (conta.DiminuirLimite(valor))
+        {
+            CriarRodape($"Limite diminuído para {conta.Limite:C}!");
+        }
+        else
+        {
+            CriarRodape("Erro: Valor inválido ou maior que o limite atual!");
+        }
+    }
+
+    private Conta? BuscarConta()
+    {
         Write(" Número da conta: ");
-        var numero = Convert.ToInt32(ReadLine());
-        
-        Write(" Senha: ");
-        var senha = ReadLine() ?? "";
-        
-        var conta = _banco.Contas.FirstOrDefault(c => c.Numero == numero && c.Senha == senha);
-        
+        if (!int.TryParse(ReadLine(), out int numero))
+        {
+            CriarRodape("Erro: Número da conta inválido!");
+            return null;
+        }
+
+        var conta = _banco.Contas.FirstOrDefault(c => c.Numero == numero);
         if (conta == null)
         {
-            CriarRodape("Conta não encontrada ou senha inválida!");
-            return;
+            CriarRodape("Conta não encontrada!");
+            return null;
         }
-        
-        Write(" Valor da redução do limite: ");
-        var valor = Convert.ToDecimal(ReadLine());
-        
-        if (valor <= 0)
+
+        Write(" Senha: ");
+        var senha = ReadLine() ?? "";
+
+        if (conta.Senha != senha)
         {
-            CriarRodape("Valor deve ser maior que zero!");
-            return;
+            CriarRodape("Senha incorreta!");
+            return null;
         }
-        
-        if (!conta.DiminuirLimite(valor))
-        {
-            CriarRodape("Valor da redução não pode ser maior que o limite atual!");
-            return;
-        }
-        
-        CriarRodape($"Limite reduzido em {valor:C}! Novo limite: {conta.Limite:C}");
+
+        return conta;
     }
 
     private void CriarLinha()
